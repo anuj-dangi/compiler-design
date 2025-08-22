@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#define max 10  // Maximum number of productions and maximum length of each production
+#define max 20 // Maximum number of productions and maximum length of each production
 
-int n = 0; // Number of productions read
+int n = 0;			 // Number of productions read
 char prod[max][max]; // Array to store productions
 
 int ntCount = 0; // Count of non-terminals
-char nt[max];    // Array to store non-terminals
+char nt[max];	 // Array to store non-terminals
 
 char first[max][max];  // Array to store FIRST sets for each non-terminal
 char follow[max][max]; // Array to store FOLLOW sets for each non-terminal
@@ -131,15 +131,16 @@ void findFollow(int index, char c)
 
 		while (prod[i][j] != '\0')
 		{
+			int t = j + 1;
 			if (prod[i][j] == c) // If non-terminal found in RHS
 			{
-				int t = j + 1;
 				int needFollow = 1; // Flag to determine if FOLLOW of LHS needed
 				while (prod[i][t] != '\0')
 				{
 					if (!isNt(prod[i][t])) // Terminal after non-terminal
 					{
 						add(follow[index], prod[i][t]);
+						needFollow = 0;
 						break;
 					}
 					else
@@ -151,7 +152,7 @@ void findFollow(int index, char c)
 						// Add FIRST of next non-terminal
 						for (int l = 0; first[k][l] != '\0'; l++)
 						{
-							if(first[k][l] == '~')
+							if (first[k][l] == '~')
 							{
 								isEsp = 1;
 								continue;
@@ -159,9 +160,9 @@ void findFollow(int index, char c)
 							add(follow[index], first[k][l]);
 						}
 
-						if(!isEsp)
+						if (!isEsp)
 						{
-							if(prod[i][t+1] != '\0')
+							if (prod[i][t + 1] != '\0')
 							{
 								needFollow = 0;
 							}
@@ -173,19 +174,18 @@ void findFollow(int index, char c)
 				}
 				if (needFollow) // If epsilon or end of production, add FOLLOW of LHS
 				{
-					if(prod[i][0] != prod[i][j])
+					int k = indexOf(prod[i][0]);
+
+					if(k != index)
 					{
-						int k = indexOf(prod[i][0]);
-
 						findFollow(k, prod[i][0]);
+					}
 
-						for (int l = 0; follow[k][l] != '\0'; l++)
-						{
-							add(follow[index], follow[k][l]);
-						}
+					for (int l = 0; follow[k][l] != '\0'; l++)
+					{
+						add(follow[index], follow[k][l]);
 					}
 				}
-				
 			}
 			j++;
 		}

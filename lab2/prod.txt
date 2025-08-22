@@ -1,6 +1,8 @@
-A->BCD
-B->b
-C->c
-C->~
-D->d
-D->~
+E->TQ
+Q->+TQ
+Q->~
+T->FW
+W->*FW
+W->~
+F->(E)
+F->i

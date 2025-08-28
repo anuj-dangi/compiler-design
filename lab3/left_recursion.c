@@ -1,249 +1,344 @@
-#include <stdio.h>
-#include <string.h>
+    #include <stdio.h>
+    #include <string.h>
 
-#define max 20 // Maximum number of productions and maximum length of each production
+    #define max 20
 
-int n = 0;			 // Number of productions read
-char prod[max][max]; // Array to store input productions
+    int n = 0;
+    char prod[max][max];
 
-char outProd[max][max]; // Array to store the output (left recursion free) productions
+    char outProd[max][max];
 
-int ntCount = 0; // Count of non-terminals
-char nt[max];	 // Array to store non-terminals
+    int ntCount = 0;
+    char nt[max];
 
-// Arrays to store α (recursive part) and β (non-recursive part) of productions
-char alpha[max][5][max];
-char beta[max][5][max];
+    char alpha[max][5][max];
+    char beta[max][5][max];
 
-char temp = 'Z';  // Temporary new non-terminal names start from 'Z' backwards
-int newN = 0;     // Number of new productions generated
+    char temp = 'Z';
+    int newN = 0;
 
-// Returns the index of a non-terminal in the nt array
-int indexOf(char c)
-{
-	for (int i = 0; i < ntCount; i++)
-	{
-		if (nt[i] == c)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-// Check if a character is already present in a given array
-int isPresent(char arr[], char c)
-{
-	int i = 0;
-	while (arr[i] != '\0')
-	{
-		if (arr[i] == c)
-			return 1; // Found
-		i++;
-	}
-	return 0; // Not found
-}
-
-// Add a character to an array if it is not already present
-void add(char arr[], char c)
-{
-	if (!isPresent(arr, c)) // Avoid duplicates
-	{
-		int i = 0;
-		while (arr[i] != '\0') // Move to end of string
-		{
-			i++;
-		}
-
-		arr[i] = c;	   // Insert character
-		arr[i + 1] = '\0'; // Null terminate
-	}
-}
-
-// Separate productions of non-terminal c into alpha (if left-recursive) and beta (otherwise)
-void findAlphaBeta(int index, char c)
-{
-    int ak = 0, bk = 0;
-    for(int i=0;i<n;i++)
+    int indexOf(char c)
     {
-        if(prod[i][0] == c)
+        for (int i = 0; i < ntCount; i++)
         {
-            int j = 3; // Skip over "A->"
-
-            if(prod[i][j] == c) // Left recursion detected
+            if (nt[i] == c)
             {
-                for(int l=j+1; prod[i][l] != '\0'; l++)
-                {
-                    add(alpha[index][ak], prod[i][l]);
-                }
-                ak++;
+                return i;
             }
-            else // Non-left-recursive production
+        }
+        return -1;
+    }
+
+    int isNt(char c)
+    {
+        return (c >= 'A' && c <= 'Z');
+    }
+
+    int isPresent(char arr[], char c)
+    {
+        int i = 0;
+        while (arr[i] != '\0')
+        {
+            if (arr[i] == c)
+                return 1;
+            i++;
+        }
+        return 0;
+    }
+
+    void add(char arr[], char c)
+    {
+        if (!isPresent(arr, c))
+        {
+            int i = 0;
+            while (arr[i] != '\0')
             {
-                for(int l=j; prod[i][l] != '\0'; l++)
+                i++;
+            }
+
+            arr[i] = c;
+            arr[i + 1] = '\0';
+        }
+    }
+
+    void findAlphaBeta(int index, char c)
+    {
+        int ak = 0, bk = 0;
+        for(int i=0;i<n;i++)
+        {
+            if(prod[i][0] == c)
+            {
+                int j = 3;
+
+                if(prod[i][j] == c)
                 {
-                    add(beta[index][bk], prod[i][l]);
+                    for(int l=j+1; prod[i][l] != '\0'; l++)
+                    {
+                        add(alpha[index][ak], prod[i][l]);
+                    }
+                    ak++;
                 }
-                bk++;
+                else
+                {
+                    for(int l=j; prod[i][l] != '\0'; l++)
+                    {
+                        add(beta[index][bk], prod[i][l]);
+                    }
+                    bk++;
+                }
             }
         }
     }
-}
 
-// Generate new productions eliminating left recursion for non-terminal c
-void leftRec(int index, char c)
-{
-    if(alpha[index][0][0] != '\0') // Left recursion exists
+    void leftRec(int index, char c)
     {
-        // For each β, create A -> βA'
-        int i=0;
-        do
+        if(alpha[index][0][0] != '\0')
         {
-            outProd[newN][0] = c;
-            outProd[newN][1] = '-';
-            outProd[newN][2] = '>';
-
-            int j = 3, k = 0;
-            while(beta[index][i][k] != '\0')
+            int i=0;
+            do
             {
-                outProd[newN][j] = beta[index][i][k];
-                j++;
-                k++;
-            }
-            outProd[newN][j++] = temp; // Append new non-terminal
-            outProd[newN][j] = '\0';
-            i++;
-            newN++;
-        }
-        while(beta[index][i][0] != '\0');
+                outProd[newN][0] = c;
+                outProd[newN][1] = '-';
+                outProd[newN][2] = '>';
 
-        // For each α, create A' -> αA'
-        i=0;
-        while(alpha[index][i][0] != '\0')
-        {
+                int j = 3, k = 0;
+                while(beta[index][i][k] != '\0')
+                {
+                    outProd[newN][j] = beta[index][i][k];
+                    j++;
+                    k++;
+                }
+                outProd[newN][j++] = temp;
+                outProd[newN][j] = '\0';
+                i++;
+                newN++;
+            }
+            while(beta[index][i][0] != '\0');
+
+            i=0;
+            while(alpha[index][i][0] != '\0')
+            {
+                outProd[newN][0] = temp;
+                outProd[newN][1] = '-';
+                outProd[newN][2] = '>';
+
+                int j = 3, k = 0;
+                while(alpha[index][i][k] != '\0')
+                {
+                    outProd[newN][j] = alpha[index][i][k];
+                    j++;
+                    k++;
+                }
+                outProd[newN][j++] = temp;
+                outProd[newN][j] = '\0';
+                i++;
+                newN++;
+            }
+
             outProd[newN][0] = temp;
             outProd[newN][1] = '-';
             outProd[newN][2] = '>';
+            outProd[newN][3] = '~';
+            outProd[newN][4] = '\0';
+            newN++;
 
-            int j = 3, k = 0;
-            while(alpha[index][i][k] != '\0')
+            temp--;
+        }
+        else
+        {
+            int i=0;
+            while(beta[index][i][0] != '\0')
             {
-                outProd[newN][j] = alpha[index][i][k];
-                j++;
+                outProd[newN][0] = c;
+                outProd[newN][1] = '-';
+                outProd[newN][2] = '>';
+
+                int j = 3, k = 0;
+                while(beta[index][i][k] != '\0')
+                {
+                    outProd[newN][j] = beta[index][i][k];
+                    j++;
+                    k++;
+                }
+                outProd[newN][j] = '\0';
+                i++;
+                newN++;
+            }
+        }
+    }
+
+    void findAll(int index, char rhs[max][max])
+    {
+        int k = 0;
+        for(int i=0;i<n;i++)
+        {
+            if(prod[i][0] == nt[index])
+            {
+                int j = 3;
+                while(prod[i][j] != '\0')
+                {
+                    rhs[k][j-3] = prod[i][j];
+                    j++;
+                }
                 k++;
             }
-            outProd[newN][j++] = temp; // Append itself
-            outProd[newN][j] = '\0';
-            i++;
-            newN++;
         }
-
-        // Add ε-production: A' -> ~ (using ~ to denote epsilon here)
-        outProd[newN][0] = temp;
-        outProd[newN][1] = '-';
-        outProd[newN][2] = '>';
-        outProd[newN][3] = '~';
-        outProd[newN][4] = '\0';
-        newN++;
-
-        temp--; // Move to next temporary non-terminal
+        rhs[k][0] = '\0';
     }
-    else // No left recursion, copy β-productions directly
-    {
-        int i=0;
-        while(beta[index][i][0] != '\0')
-        {
-            outProd[newN][0] = c;
-            outProd[newN][1] = '-';
-            outProd[newN][2] = '>';
 
-            int j = 3, k = 0;
-            while(beta[index][i][k] != '\0')
+    void removeIndirect(int index, char c)
+    {
+        for(int i=0;i<n;i++)
+        {
+            if(prod[i][0] == c)
             {
-                outProd[newN][j] = beta[index][i][k];
-                j++;
-                k++;
+                int tempc = prod[i][3];
+                if( tempc != c && isNt(tempc))
+                {
+                    for(int l=0;l<n;l++)
+                    {
+                        if(prod[l][0] == tempc)
+                        {
+                            if(prod[l][3] == prod[i][0])
+                            {
+                                char rhs[max][max];
+
+                                int p = indexOf(tempc);
+
+                                findAll(p, rhs);
+
+                                char rRhs[max][max];
+
+                                char str[max];
+                                for(int k=4; prod[i][k] != '\0'; k++)
+                                {
+                                    str[k-4] = prod[i][k];
+                                }
+                                str[strlen(str)] = '\0';
+
+                                int u = 0;
+                                while(rhs[u][0] != '\0')
+                                {
+                                    int y = 0;
+                                    while(rhs[u][y] != '\0')
+                                    {
+                                        rRhs[u][y] = rhs[u][y];
+                                        y++;
+                                    }
+
+                                    int r = 0;
+                                    while(str[r] != '\0')
+                                    {
+                                        rRhs[u][y] = str[r];
+                                        y++;
+                                        r++;
+                                    }
+                                    rRhs[u][y] = '\0';
+                                    u++;
+                                }
+                                rRhs[u][0] = '\0';
+
+                                int y = 0;
+                                while(rRhs[0][y] != '\0')
+                                {
+                                    prod[i][y+3] = rRhs[0][y++];
+                                }
+                                prod[i][y+3] = '\0';
+
+                                y = 1;
+
+                                while(rRhs[y][0] != '\0')
+                                {
+                                    prod[n][0] = prod[i][0];
+                                    prod[n][1] = '-';
+                                    prod[n][2] = '>';
+                                    int r = 0;
+                                    while(rRhs[y][r] != '\0')
+                                        prod[n][r+3] = rRhs[y][r++];
+                                    prod[n][r+3] = '\0';
+                                    n++;
+                                    y++;
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            outProd[newN][j] = '\0';
-            i++;
-            newN++;
         }
     }
-}
 
-int main(int argc, char *argv[])
-{
-	if (argc != 2) // Check for input file argument
-	{
-		perror("error: file name is not given\n");
-		return 1;
-	}
-
-	FILE *file = fopen(argv[1], "r");
-
-	if (file == NULL) // Check if file can be opened
-	{
-		perror("Error: cannot open file\n");
-		return 1;
-	}
-
-	int c;
-
-	// Read productions from file
-	while ((c = fgetc(file)) != EOF)
-	{
-		fseek(file, -1, SEEK_CUR); // Move back one character
-
-		fgets(prod[n], max, file); // Read production line
-
-		int len = strlen(prod[n]);
-		if (len > 0 && prod[n][len - 1] == '\n')
-		{
-			prod[n][len - 1] = '\0'; // Remove newline
-		}
-
-		// If LHS non-terminal not already stored → add to nt[]
-		if (indexOf(prod[n][0]) == -1)
-		{
-			nt[ntCount++] = prod[n][0];
-		}
-		n++; // Increase production count
-	}
-
-	// Initialize α and β arrays
-	for (int i = 0; i < ntCount; i++)
-	{
-        for(int j=0; j<5;j++)
+    int main(int argc, char *argv[])
+    {
+        if (argc != 2)
         {
-            alpha[i][j][0] = beta[i][j][0] = '\0'; // Empty sets
+            perror("error: file name is not given\n");
+            return 1;
         }
-	}
 
-	// Separate productions into α and β parts
-	for(int i=0;i<ntCount;i++)
-    {
-        findAlphaBeta(i, nt[i]);
+        FILE *file = fopen(argv[1], "r");
+
+        if (file == NULL)
+        {
+            perror("Error: cannot open file\n");
+            return 1;
+        }
+
+        int c;
+
+        while ((c = fgetc(file)) != EOF)
+        {
+            fseek(file, -1, SEEK_CUR);
+
+            fgets(prod[n], max, file);
+
+            int len = strlen(prod[n]);
+            if (len > 0 && prod[n][len - 1] == '\n')
+            {
+                prod[n][len - 1] = '\0';
+            }
+
+            if (indexOf(prod[n][0]) == -1)
+            {
+                nt[ntCount++] = prod[n][0];
+            }
+            n++;
+        }
+
+        for(int i=0;i<ntCount;i++)
+        {
+            removeIndirect(i, nt[i]);
+        }
+
+        for (int i = 0; i < ntCount; i++)
+        {
+            for(int j=0; j<5;j++)
+            {
+                alpha[i][j][0] = beta[i][j][0] = '\0';
+            }
+        }
+
+        for(int i=0;i<ntCount;i++)
+        {
+            findAlphaBeta(i, nt[i]);
+        }
+
+        for(int i=0;i<ntCount;i++)
+        {
+            leftRec(i, nt[i]);
+        }
+
+        printf("-----Left Recursion free Grammar-----\n");
+        for (int i = 0; i < newN; i++)
+        {
+            int j = 0;
+            while (outProd[i][j] != '\0')
+            {
+                printf("%c", outProd[i][j]);
+                j++;
+            }
+            printf("\n");
+        }
+
+        fclose(file);
+        return 0;
     }
-
-	// Generate left-recursion-free productions
-	for(int i=0;i<ntCount;i++)
-    {
-		leftRec(i, nt[i]);
-    }
-
-	// Print the resulting grammar
-	printf("-----Left Recursion free Grammar-----\n");
-	for (int i = 0; i < newN; i++)
-	{
-		int j = 0;
-		while (outProd[i][j] != '\0')
-		{
-			printf("%c", outProd[i][j]);
-			j++;
-		}
-		printf("\n");
-	}
-
-	fclose(file); // Close input file
-	return 0;
-}

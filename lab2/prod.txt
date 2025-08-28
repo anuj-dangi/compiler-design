@@ -1,8 +1,8 @@
-E->TQ
-Q->+TQ
+S->AQ
+Q->aAQ
 Q->~
-T->FW
-W->*FW
+A->BW
+W->bBW
 W->~
-F->(E)
-F->i
+B->dSc
+B->e

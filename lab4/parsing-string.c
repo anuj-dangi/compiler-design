@@ -387,6 +387,17 @@ void parse()
 			printf("String cannot be passed given this grammar!\n");
 			return;
 		}
+		printf("Stack: ");
+		for(int j=0;j<stack.top;j++)
+		{
+			printf("%c", stack.items[j]);
+		}
+		printf(", Input: ");
+		for(int j=i;j<strlen(str);j++)
+		{
+			printf("%c", str[j]);
+		}
+		printf("\n");
 	}
 
 	if(peek(s) != '$')

@@ -355,8 +355,21 @@ void parse()
 	push(s, nt[0]);
 
 	int i = 0;
+	printf("Stack: ");
+	printf("\t\tInput: \n");
 	while(str[i] != '\0')
 	{
+		for(int j=0;j<=stack.top;j++)
+		{
+			printf("%c", stack.items[j]);
+		}
+		printf("\t\t");
+		for(int j=i;j<strlen(str);j++)
+		{
+			printf("%c", str[j]);
+		}
+		printf("\n");
+
 		if((peek(s) == str[i]) && str[i] == '$')
 		{
 			printf("String is accepted\n");
@@ -387,17 +400,6 @@ void parse()
 			printf("String cannot be passed given this grammar!\n");
 			return;
 		}
-		printf("Stack: ");
-		for(int j=0;j<stack.top;j++)
-		{
-			printf("%c", stack.items[j]);
-		}
-		printf(", Input: ");
-		for(int j=i;j<strlen(str);j++)
-		{
-			printf("%c", str[j]);
-		}
-		printf("\n");
 	}
 
 	if(peek(s) != '$')
